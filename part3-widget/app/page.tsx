@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Session = {
   id: number;
@@ -8,13 +8,11 @@ type Session = {
   teacher: string;
   date: string;
   time: string;
-  startsAt: string;
 };
 
 type Slot = {
   id: number;
   startsAt: string;
-  available: boolean;
 };
 
 const initialSessions: Session[] = [
@@ -24,7 +22,6 @@ const initialSessions: Session[] = [
     teacher: "Rahul Sharma",
     date: "Tuesday, August 11",
     time: "4:00 PM",
-    startsAt: "2026-08-11T16:00:00Z",
   },
   {
     id: 2,
@@ -32,7 +29,6 @@ const initialSessions: Session[] = [
     teacher: "Ankit Verma",
     date: "Wednesday, August 12",
     time: "11:00 AM",
-    startsAt: "2026-08-12T11:00:00Z",
   },
   {
     id: 3,
@@ -40,7 +36,6 @@ const initialSessions: Session[] = [
     teacher: "Priya Singh",
     date: "Thursday, August 13",
     time: "3:30 PM",
-    startsAt: "2026-08-13T15:30:00Z",
   },
 ];
 
@@ -48,37 +43,30 @@ const availableSlots: Slot[] = [
   {
     id: 1,
     startsAt: "2026-08-11T10:00:00Z",
-    available: true,
   },
   {
     id: 2,
     startsAt: "2026-08-11T11:00:00Z",
-    available: false,
   },
   {
     id: 3,
     startsAt: "2026-08-11T12:00:00Z",
-    available: true,
   },
   {
     id: 4,
     startsAt: "2026-08-11T14:00:00Z",
-    available: false,
   },
   {
     id: 5,
     startsAt: "2026-08-11T15:00:00Z",
-    available: true,
   },
   {
     id: 6,
     startsAt: "2026-08-11T16:00:00Z",
-    available: true,
   },
   {
     id: 7,
     startsAt: "2026-08-11T17:00:00Z",
-    available: false,
   },
 ];
 
@@ -121,6 +109,20 @@ export default function Home() {
 
   const [successMessage, setSuccessMessage] = useState("");
 
+  // Load previously rescheduled sessions from localStorage
+  useEffect(() => {
+    const savedSessions = localStorage.getItem("tutoring-sessions");
+
+    if (savedSessions) {
+      try {
+        const parsedSessions: Session[] = JSON.parse(savedSessions);
+        setSessions(parsedSessions);
+      } catch {
+        localStorage.removeItem("tutoring-sessions");
+      }
+    }
+  }, []);
+
   const openReschedule = (session: Session) => {
     setSelectedSession(session);
     setSelectedSlot(null);
@@ -128,27 +130,21 @@ export default function Home() {
   };
 
   const closeReschedule = () => {
-    if (isRescheduling) return;
+    if (isRescheduling) {
+      return;
+    }
 
     setSelectedSession(null);
     setSelectedSlot(null);
   };
 
-const isSlotAllowed = (slot: Slot) => {
-  const slotTime = new Date(slot.startsAt).getTime();
+  const isSlotAllowed = (slot: Slot) => {
+    const slotTime = new Date(slot.startsAt).getTime();
 
-  const minimumTime = Date.now() + 2 * 60 * 60 * 1000;
+    const minimumTime = Date.now() + 2 * 60 * 60 * 1000;
 
-  // Don't allow the session to be rescheduled to its current slot
-  if (
-    selectedSession &&
-    new Date(selectedSession.startsAt).getTime() === slotTime
-  ) {
-    return false;
-  }
-
-  return slotTime >= minimumTime;
-};
+    return slotTime >= minimumTime;
+  };
 
   const confirmReschedule = () => {
     if (!selectedSession || !selectedSlot || isRescheduling) {
@@ -161,16 +157,23 @@ const isSlotAllowed = (slot: Slot) => {
       const newDate = formatDate(selectedSlot.startsAt);
       const newTime = formatTime(selectedSlot.startsAt);
 
-      setSessions((currentSessions) =>
-        currentSessions.map((session) =>
-          session.id === selectedSession.id
-            ? {
-                ...session,
-                date: newDate,
-                time: newTime,
-              }
-            : session,
-        ),
+      const updatedSessions = sessions.map((session) =>
+        session.id === selectedSession.id
+          ? {
+              ...session,
+              date: newDate,
+              time: newTime,
+            }
+          : session,
+      );
+
+      // Update React state
+      setSessions(updatedSessions);
+
+      // Persist updated sessions so they survive page refresh
+      localStorage.setItem(
+        "tutoring-sessions",
+        JSON.stringify(updatedSessions),
       );
 
       setIsRescheduling(false);
@@ -188,10 +191,10 @@ const isSlotAllowed = (slot: Slot) => {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 px-6 py-12">
-      <div className="mx-auto max-w-4xl">
+    <main className="min-h-screen bg-slate-50 px-4 py-12">
+      <div className="mx-auto max-w-3xl">
         {/* Header */}
-        <div className="mb-10">
+        <div className="mb-8">
           <p className="mb-3 text-sm font-medium text-blue-600">
             Student Dashboard
           </p>
@@ -318,9 +321,7 @@ const isSlotAllowed = (slot: Slot) => {
                       {formatSlot(slot.startsAt)}
 
                       {!allowed && (
-                        <span className="mt-1 block text-xs">
-                          {!slot.available ? "Booked" : "Too soon"}
-                        </span>
+                        <span className="mt-1 block text-xs">Too soon</span>
                       )}
                     </button>
                   );
