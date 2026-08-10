@@ -8,6 +8,7 @@ type Session = {
   teacher: string;
   date: string;
   time: string;
+  startsAt: string;
 };
 
 type Slot = {
@@ -23,6 +24,7 @@ const initialSessions: Session[] = [
     teacher: "Rahul Sharma",
     date: "Tuesday, August 11",
     time: "4:00 PM",
+    startsAt: "2026-08-11T16:00:00Z",
   },
   {
     id: 2,
@@ -30,6 +32,7 @@ const initialSessions: Session[] = [
     teacher: "Ankit Verma",
     date: "Wednesday, August 12",
     time: "11:00 AM",
+    startsAt: "2026-08-12T11:00:00Z",
   },
   {
     id: 3,
@@ -37,6 +40,7 @@ const initialSessions: Session[] = [
     teacher: "Priya Singh",
     date: "Thursday, August 13",
     time: "3:30 PM",
+    startsAt: "2026-08-13T15:30:00Z",
   },
 ];
 
@@ -130,13 +134,21 @@ export default function Home() {
     setSelectedSlot(null);
   };
 
- const isSlotAllowed = (slot: Slot) => {
-   const slotTime = new Date(slot.startsAt).getTime();
+const isSlotAllowed = (slot: Slot) => {
+  const slotTime = new Date(slot.startsAt).getTime();
 
-   const minimumTime = Date.now() + 2 * 60 * 60 * 1000;
+  const minimumTime = Date.now() + 2 * 60 * 60 * 1000;
 
-   return slot.available && slotTime >= minimumTime;
- };
+  // Don't allow the session to be rescheduled to its current slot
+  if (
+    selectedSession &&
+    new Date(selectedSession.startsAt).getTime() === slotTime
+  ) {
+    return false;
+  }
+
+  return slotTime >= minimumTime;
+};
 
   const confirmReschedule = () => {
     if (!selectedSession || !selectedSlot || isRescheduling) {
