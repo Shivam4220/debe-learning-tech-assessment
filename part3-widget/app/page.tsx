@@ -13,6 +13,7 @@ type Session = {
 type Slot = {
   id: number;
   startsAt: string;
+  available: boolean;
 };
 
 const initialSessions: Session[] = [
@@ -43,30 +44,37 @@ const availableSlots: Slot[] = [
   {
     id: 1,
     startsAt: "2026-08-11T10:00:00Z",
+    available: true,
   },
   {
     id: 2,
     startsAt: "2026-08-11T11:00:00Z",
+    available: false,
   },
   {
     id: 3,
     startsAt: "2026-08-11T12:00:00Z",
+    available: true,
   },
   {
     id: 4,
     startsAt: "2026-08-11T14:00:00Z",
+    available: false,
   },
   {
     id: 5,
     startsAt: "2026-08-11T15:00:00Z",
+    available: true,
   },
   {
     id: 6,
     startsAt: "2026-08-11T16:00:00Z",
+    available: true,
   },
   {
     id: 7,
     startsAt: "2026-08-11T17:00:00Z",
+    available: false,
   },
 ];
 
@@ -122,13 +130,13 @@ export default function Home() {
     setSelectedSlot(null);
   };
 
-  const isSlotAllowed = (slot: Slot) => {
-    const slotTime = new Date(slot.startsAt).getTime();
+ const isSlotAllowed = (slot: Slot) => {
+   const slotTime = new Date(slot.startsAt).getTime();
 
-    const minimumTime = Date.now() + 2 * 60 * 60 * 1000;
+   const minimumTime = Date.now() + 2 * 60 * 60 * 1000;
 
-    return slotTime >= minimumTime;
-  };
+   return slot.available && slotTime >= minimumTime;
+ };
 
   const confirmReschedule = () => {
     if (!selectedSession || !selectedSlot || isRescheduling) {
@@ -298,7 +306,9 @@ export default function Home() {
                       {formatSlot(slot.startsAt)}
 
                       {!allowed && (
-                        <span className="mt-1 block text-xs">Too soon</span>
+                        <span className="mt-1 block text-xs">
+                          {!slot.available ? "Booked" : "Too soon"}
+                        </span>
                       )}
                     </button>
                   );
