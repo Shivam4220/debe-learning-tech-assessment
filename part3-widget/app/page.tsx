@@ -42,31 +42,31 @@ const initialSessions: Session[] = [
 const availableSlots: Slot[] = [
   {
     id: 1,
-    startsAt: "2026-08-11T10:00:00Z",
+    startsAt: "2026-08-11T17:30:00Z",
   },
   {
     id: 2,
-    startsAt: "2026-08-11T11:00:00Z",
+    startsAt: "2026-08-11T18:00:00Z",
   },
   {
     id: 3,
-    startsAt: "2026-08-11T12:00:00Z",
+    startsAt: "2026-08-12T04:30:00Z",
   },
   {
     id: 4,
-    startsAt: "2026-08-11T14:00:00Z",
+    startsAt: "2026-08-12T06:30:00Z",
   },
   {
     id: 5,
-    startsAt: "2026-08-11T15:00:00Z",
+    startsAt: "2026-08-12T08:30:00Z",
   },
   {
     id: 6,
-    startsAt: "2026-08-11T16:00:00Z",
+    startsAt: "2026-08-12T10:30:00Z",
   },
   {
     id: 7,
-    startsAt: "2026-08-11T17:00:00Z",
+    startsAt: "2026-08-12T12:30:00Z",
   },
 ];
 
